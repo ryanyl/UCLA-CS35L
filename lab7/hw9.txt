@@ -1,0 +1,114 @@
+Ryan Lin
+005131227
+HW 9
+==========
+
+1. Created a log to record actions in the homework
+$ emacs hw9.txt
+
+2. I checked out version 3.0 of Diffutils into a new branch called quote by
+running
+$ git checkout v3.0 -b quote
+
+3. I installed my new change by running
+$ patch -p1 <quote-3.0-patch.txt
+There were no apparent errors.
+
+4. add-change-log-entry-other-window (C-x 4 a) adds a new entry to the change
+log file for the file you are editing
+
+5. I used the emacs function add-change-log-entry-other-window to add a
+changelog entry to my patch file.
+
+$ emacs quote-3.0-patch.txt
+C-x 4 a
+
+	* quote-3.0-patch.txt: This patch is a response to a change in the
+    GNU coding standards, which now suggests quoting 'like this' or
+    "like this", instead of `like this' or ``like this''. This change
+    is only applied to character string constants in the c files.
+
+C-x C-c
+
+6. I then committed my changes to the new branch, using ChangeLog as
+the commit message
+$ git add .
+$ git commit -F ChangeLog
+
+NOTE: I mistakenly git added and committed my quote-3.0-patch.txt so I
+deleted it and git add and committed again, with Changelog as the commit
+message
+
+7. I used git format-patch to generate a patch that did not require anything
+to be fixed by hand after the patch is applied.
+
+$ git format-patch -1 --stdout > formatted-patch.txt
+
+8. I checked out version 3.0 again to a new branch that I named 'partner'.
+I then exchanged patches with my parter through email, then applied his patch
+and rebuilt the resulting system with git am. Partner: James Zhou
+
+$ git checkout v3.0 -b partner
+$ git am < formatted-patch.txt
+$ ./bootstrap
+$ emacs patchfile
+*copied given patchfile into directory*
+$ cd lib
+$ patch < patchfile
+$ ./configure
+$ make
+$ make check
+
+make check threw the same errors as when I ran make check in the lab:
+
+make[3]: *** [Makefile:1309: basic.log] Error 126
+make[3]: Leaving directory '/w/home.24/ee/ugrad/linr/cs35l/wk7/diffutils/tests'
+make[2]: *** [Makefile:1291: check-TESTS] Error 2
+make[2]: Leaving directory '/w/home.24/ee/ugrad/linr/cs35l/wk7/diffutils/tests'
+make[1]: *** [Makefile:1406: check-am] Error 2
+make[1]: Leaving directory '/w/home.24/ee/ugrad/linr/cs35l/wk7/diffutils/tests'
+make: *** [Makefile:1016: check-recursive] Error 1
+
+However, I ran "diff . -" and "diff --help" and both commands outputted what
+was expected, telling me that those errors were not detrimental to the
+performance patched diff
+
+I tested the following commands as before and sure enough, all the ` were 
+replaced with ', signaling a successful patch. I did not list out the 
+lengthy output of ./diff --help, and instead only included the lines
+that formerly contained ` and now replaced with '.
+
+$ cd src
+$ ./diff . -
+./diff: cannot compare '-' to a directory
+
+$ ./diff --help
+LTYPE is 'old', 'new', or 'unchanged'.  GTYPE is LTYPE or 'changed'.
+FILES are 'FILE1 FILE2' or 'DIR1 DIR2' or 'DIR FILE...' or 'FILE... DIR'.
+If --from-file or --to-file is given, there are no restrictions on FILES.
+If a FILE is '-', read standard input.
+
+9. To verify that the ChangeLog entry works, I ran
+$ make distdir
+and cd'd into the newly created directory diffutils-3.0.1-533c
+$ cd diffutils-3.0.1-533c
+From there, I emacs'd into the ChangeLog file and saw my partner's
+ChangeLog entry at the top of this file, indicating that his
+entry worked.
+
+10. I logged out, downloaded Xming, and then ssh into the server with
+X11 forwarding enabled and the display variable set to :0.0. I then
+cd'd into ~eggert/src/gnu/emacs and then ran gitk, which opened
+a window with multiple subwindows. The top left shows a diagram
+representation of all the git actions done to the remote repository, to
+the left of that contains the timestamp and information of the
+person who made that action. Below are two windows, one showing the
+diff file and changelog corresponding to the selected change and
+one containing the git tree/patch.
+
+I scrolled all the way down to 2015-01-25 to find the newest merge
+no newer than 2015-01-25. I found a merge by Joakim Verona who merged
+into master on 2015-01-24 17:11:31
+
+
+

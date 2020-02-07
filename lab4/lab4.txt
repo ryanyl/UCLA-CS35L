@@ -1,0 +1,67 @@
+Ryan Lin
+005131227
+Lab 4
+==========
+
+I first obtained version of coreutils given in the lab specs using 
+$ wget http://web.cs.ucla.edu/classes/fall19/cs35L/assign/
+  coreutils-with-bug.tar
+
+I then unzipped the tar file using
+$ tar -xf coreutils-with-bug.tar
+
+I then made a directory and set the configure prefix to it before
+configuring coreutils
+$ mkdir coreutilsInstall
+$ ./configure --prefix=/u/ee/ugrad/linr/35L/wk4
+
+When I ran $ make, I ran into an error from conflicting types for
+'futimens' in the file included from utimecmp.c.
+
+To fix this problem I created a patch file, copied the patches from
+the assignment page, and applied the patch.
+$ emacs patch_file
+# copied patch content into patch_file
+$ patch -p0 < patch_file
+
+To reproduce the problem, I ran the following commands:
+$ tmp = $(mktemp -d)
+$ cd $tmp
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice-cs35L
+$ touch now
+$ sleep 1
+$ touch now1
+$ TZ=UTC0 /u/ee/ugrad/linr/35L/wk4/coreutilsInstall/bin/ls 
+-lt --full-time wwi-armistice-cs35L now now1
+
+The file marked last modified at 1918 appeared
+first when it was supposed to appear last. The other two files,
+now and now1, appeared in their expected order
+
+I used gdb to trace through ls.c and traced the problem to the sort_files
+function, which called a function called timespec_cmp from a separate file
+named timespec.h. I then emacs'd into timespec.h, which was located in
+bin.
+
+Inside timespec.h, time values of two files passed in, stored in structs 
+that contained seconds and nanosecond, were compared. The timespec_cmp
+was to return negative, zero, positive if A < B, A == B, A > B, respectively,
+where A is the timestamp of the first parameter and B is the timestamp of
+the second. However, due to an error in integer overflow, files with a
+timestamp of date very far into the past were showing up as most recent.
+
+To fix this error, I saved the original version of timespec.h by using
+$ cp timespec.h timespec_old.h
+and made my changes to timespec.h directly. I then ran $ make 
+$ make install after I made my changes to timespec.h before running 
+the given test case again to make sure the issue was fixed, which is was.
+
+To create the patch file lab4.diff I ran
+$ diff -u timespec.h timespec_old.h > lab4.diff
+and then wrote a ChangeLog entry at the top of lab4.diff
+
+I tried to reproduce the problem in my home directory on the SEASnet Linux
+server07. When running the test case, I found a bug in the touch command 
+instead, in which $ touch -d '1918-11-11 11:00 GMT' wwi-armistice-cs35L 
+would create a file with a timestamp of 2054 instead of 1918. Therefore
+the bug is not reproducable on the SEASnet Linux servers.

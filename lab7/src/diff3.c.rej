@@ -1,0 +1,11 @@
+--- src/diff3.c
++++ src/diff3.c
+@@ -433,7 +433,7 @@
+   N_("-3, --easy-only             like -e, but incorporate only nonoverlapping changes"),
+   N_("-x, --overlap-only          like -e, but incorporate only overlapping changes"),
+   N_("-X                          like -x, but bracket conflicts"),
+-  N_("-i                          append `w' and `q' commands to ed scripts"),
++  N_("-i                          append 'w' and 'q' commands to ed scripts"),
+   "",
+   N_("-m, --merge                 output actual merged file, according to\n"
+      "                                -A if no other options are given"),

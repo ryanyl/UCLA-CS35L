@@ -1,0 +1,29 @@
+Q1) The patch improves the performane of the ls command because now
+ls -a -A behaves as expected. It is also slightly faster because
+we removed an if statement.
+
+Q2) If my company relied on the old version of ls in their programs, the newly
+patched version might affect the behaviour of the old programs. This would
+require even more patches to files with ls in them originally.
+
+Q3) When invoked on an empty file such as /dev/null, randline.py outputs
+the following error message: list index out of range. This is because
+/dev/null is a special filesystem object that throws away anything written
+into it, which means it is always an empty file. Line 227 in randline.py
+
+return seq[int(self.random() * len(seq))]  # raises IndexError if seq is empty
+
+tries to index into an emtpy array, so randline.py will encounter an 
+IndexError
+
+Q4) randline.py, when run with python3, encounters a syntax error
+
+    except IOError as (errno, strerror):
+    ^SyntaxError: invalid syntax
+
+This indicates that some syntax available in python were changed
+or updated in python3.
+
+Q5) When my script is invoked with Python 2 rather than Python 3,
+my script behaves identically because everything I used that was
+supported in in Python 3 was also supported in Python 2.

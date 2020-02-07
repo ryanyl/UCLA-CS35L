@@ -1,0 +1,219 @@
+Ryan Lin
+005131227
+Assignment 5
+==========
+
+LAB
+==========
+1. I wrote my code for tr2b.c and tr2u.c and compiled them in the C11 standard
+$ gcc -std=c11 tr2b.c -o tr2b
+$ gcc -std=c11 tr2u.c -o tr2u
+
+2. I then created the big file for testing purposes
+$ head --bytes=5000000 /dev/urandom > bigfile.txt
+
+3. Using strace command to compare system calls between tr2u and tr2b
+a. copying from one file to another
+
+$ strace -c ./tr2u 'a' 'b' < bigfile.txt > tr2u_out
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 54.72   21.959829           4   5000000           write
+ 45.28   18.167857           4   5000002           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         7           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   40.127686              10000024         1 total
+
+$ strace -c ./tr2b 'a' 'b' < bigfile.txt > tr2b_out
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 50.56    0.000494           1       611           write
+ 30.91    0.000302           0       613           read
+  5.63    0.000055           6         9           mmap
+  3.58    0.000035           9         4           mprotect
+  2.76    0.000027           7         4           fstat
+  1.84    0.000018           9         2           open
+  1.33    0.000013          13         1           munmap
+  0.92    0.000009           9         1         1 access
+  0.92    0.000009           9         1           execve
+  0.72    0.000007           4         2           close
+  0.41    0.000004           4         1           brk
+  0.41    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000977                  1250         1 total
+
+As expected, the unbuffered tr implementation made much more system calls
+
+b. copying into terminal
+
+$ strace -c ./tr2u 'a' 'b' < bigfile.txt
+
+time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 57.03   24.135037           5   5000000           write
+ 42.97   18.182236           4   5000002           read
+  0.00    0.000046           7         7           mmap
+  0.00    0.000038          10         4           mprotect
+  0.00    0.000016           8         2           open
+  0.00    0.000013          13         1           munmap
+  0.00    0.000009           9         1         1 access
+  0.00    0.000008           4         2           fstat
+  0.00    0.000008           8         1           execve
+  0.00    0.000006           3         2           close
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   42.317425              10000024         1 total
+
+$ strace -c ./tr2b 'a' 'b' < bigfile.txt
+
+time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 97.53    0.077442           4     19890           write
+  2.47    0.001963           3       613           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         9           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.079405                 20529         1 total
+
+When copying to terminal, the buffered version made more calls then it did
+copying to a file.
+
+The number of system calls made by the unbuffered version copying to terminal
+was identical to the number of calls it made copying to a file.
+
+The unbuffered version still made much more system calls than the buffered
+version, as expected.
+
+4. Testing time
+
+$ time ./tr2b 'a' 'b' < bigfile.txt > tr2b_out
+real	0m0.239s
+user	0m0.187s
+sys	0m0.009s
+
+$ time ./tr2u 'a' 'b' < bigfile.txt > tr2u_out
+real	0m12.179s
+user	0m3.307s
+sys	0m8.820s
+
+tr2b outperforms tr2u due to it making much less system calls.
+
+HOMEWORK
+==========
+
+1. wrote a program to create files with specified number of words, each
+word separated by a space. Each word is four characters long
+
+#include <stdlib.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+	int x = atoi(argv[1]);
+    char c;
+    char sp = ' ';
+    for (int i = 0; i < x; i++) {
+        c = rand()% (127 - 32) + 32;
+        write(1, &c, 1);
+        c = rand()% (127 - 32) + 32;
+        write(1, &c, 1);
+        c = rand()% (127 - 32) + 32;
+        write(1, &c, 1);
+        c = rand()% (127 - 32) + 32;
+        write(1, &c, 1);
+        write(1, &sp, 1);
+
+    }
+}
+
+2. created files 0, 100, 10000, and 1000000 words long
+
+$ ./createfile 0 > file0
+$ ./createfile 100 > file100
+$ ./createfile 10000 > file10000
+$ ./createfile 1000000 > file1000000
+
+3. testing times for sfrob and sfrobu
+
+sfrobu times
+
+$ time ./sfrobu <file0
+real	0m0.002s
+user	0m0.000s
+sys	0m0.002s
+
+$ time ./sfrobu <file100
+real	0m0.004s
+user	0m0.003s
+sys		0m0.000s
+
+time ./sfrobu <file10000
+real	0m0.083s
+user	0m0.024s
+sys		0m0.056s
+
+time ./sfrobu <file1000000
+real	0m8.259s
+user	0m2.512s
+sys		0m5.704s
+
+sfrob times
+
+$ time ./sfrob <file0
+real	0m0.008s
+user	0m0.000s
+sys		0m0.002s
+
+$ time ./sfrob <file100
+real	0m0.017s
+user	0m0.000s
+sys		0m0.002s
+
+$ time ./sfrob <file10000
+real	0m0.012s
+user	0m0.011s
+sys		0m0.000s
+
+$ time ./sfrob <file1000000
+real	0m2.054s
+user	0m1.309s
+sys		0m0.074s
+
+To calculate CPU time consts, I added the user time by system time.
+100 lines took 2 milliseconds, 10000 uses 83 milliseconds, and 1000000
+8.259 seconds. I estimated a runtime of O(nlogn).
+
+4. By running strace -c multiple times on inputs of varying size, it was clear
+that brk and mmap were the system calls responsible for allocating memory.
+These system calls would be utilized if we were not to use memory allocation
+functions provided by <stdlib.h>. brk() expands a existing data size while
+mmap() allows us to allocate independent chunks of memory rather than one
+contiguous large memory allocation. Here are their usages:
+
+brk(void* ptr) accepts one void pointer parameter and sets the end of the data
+segment to the value of that pointer, thus expanding the size of
+memory allocated
+
+mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+creates a new mapping in the address space with the pointer specified in the
+parameter.
+

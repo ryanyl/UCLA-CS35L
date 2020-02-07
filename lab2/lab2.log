@@ -1,0 +1,133 @@
+Ryan Lin
+005131227
+Lab 2
+==========
+
+1) To ensure that my locale was correct, I used the following commands
+$ export LC_ALL='C'
+$ locale
+
+2) I first checked if /usr/share/dict/words was sorted by executing
+$ sort -c /usr/share/dict/words, which indicated that it was not. I
+then cd'd into my working directory, created a new file using
+$ touch word, then sorted /usr/share/dict/words, outputting the
+result into the word file.
+
+3) Download assignment page html
+$ wget http://web.cs.ucla.edu/classes/fall19/cs35L/assign/assign2.html
+
+4)
+i) tr -c 'A-Za-z' '[\n*]' < assign.html
+Outputs all characters satisfying the regex 'A-Za-z'; lines that have
+other non-letter characters are replaced with newlines.
+
+ii) tr -cs 'A-Za-z' '[\n*]' < assign.html
+This command is identical to the last one except for the added -s 
+option, which indicates the squeeze option. The squeeze option
+squeezes multiple occurrences of the same characters into one.
+Therefore this command gave us the output of the previous with
+multiple newlines replaced by one.
+
+iii) tr -cs 'A-Za-z' '[\n*]' < assign.html | sort
+The output of ii) is now pipelined to the sort function.
+Now, you can see repetitions of the same word clearly in the
+output.
+
+iv) tr -cs 'A-Za-z' '[\n*]' < assign.html -u
+The -u indicates the unique option, which checks for strict
+ordering and gets rid of duplicates. Multiple occurrences of the
+same word are reduced to one.
+
+v) tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm - words
+The output of the last command is pipelined to comm, which prints out:
+Column 1: lines unique to the output of the command examined in 4.iv. 
+compared with the words file
+Column 2: lines unique to the words file compared with the output of 4)iv)
+Column 3: lines common to both the words file and the output of 4)iv)
+
+vi) tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm -23 - words
+# ENGLISHCHECKER
+Options 2 and 3 suppress lines unique to the second argument and lines common
+to both arguments, respectively. The output is therefore the remaining column,
+lines unique to the first argument, namely the contents of column 3 from 4)v)
+
+5) Download Hawaiian page
+$ wget https://www.mauimapp.com/moolelo/hwnwdshw.htm
+
+6) buildwords script, commands explained in comments
+#!/usr/bin/bash
+
+#converts all uppercase characters to lowercase
+tr [:upper:] [:lower:] |
+
+#replaces all instances of the Hawaiian okina with an apostrophe
+tr '`' "'" |
+
+#removes all instances of ?, <u>, and </u>
+sed 's/?\|<u>\|<\/u>//g' |
+
+#extracts all lines with a Hawaiian word
+egrep "^([ ]*<td[^>]*>)[pkmnwlhaeiou' ]*(</td>[ ]*)$" |
+
+#removes all HTML tags
+sed -E 's/<[^>]*>//g' |
+
+#removes leading whitespace
+sed -E 's/^ *//g' |
+
+#separates words into different lines
+sed -E 's/ /\n/g' |
+
+#sorts and deletes duplicates
+sort -u |
+
+#only keep nonempty lines
+grep '.'
+
+7) Creating hwords:
+#make executable:
+$ chmod +x buildwords
+#Run script
+$ cat hwnwdshw.htm | ./buildwords > hwords
+
+Result: 300 Hawaiian words found
+
+8)
+This revised english checker command replaces all Hawaiian okinas with
+an apostrophe, converts uppercase letters to lowercase, replaces all
+non-letters and non-apostrophe characters with a newline, sorts, and
+finally compares the output to the words file. Note: this command 
+treats characters within html brackets ( < and > ) as valid words
+to be checked
+
+English checker:
+$ cat assign2.html | sed "s/\`/'/g" | tr '[:upper:]' '[:lower:]' |
+tr -cs "A-Za-z'" '[\n*]' | sort -u | grep '.' | 
+comm -23 - words > misEnglish
+
+The Hawaiian checker is identical to the English checker command
+except the words file is replaced with the hwords file, which
+contains Hawaiian words instead of English ones.
+
+Hawaiian checker:
+$ cat assign2.html | sed "s/\`/'/g" | tr '[:upper:]' '[:lower:]' |
+tr -cs "A-Za-z'" '[\n*]' | sort -u | grep '.' | 
+comm -23 - hwords > misHawaiian
+
+(used $ wc -l to grab number of rows in each file to
+determine number of words)
+
+Distinct misspelled words using ENGLISHCHECKER: 66 words
+Distinct misspelled words using HAWAIIANCHECKER: 557 words
+
+Number of distinct words that English checker reports as 
+misspelled but Hawaiian checker does not: 3 words
+Examples: lau, wiki
+Commands used:
+$ cat misHawaiian | comm -13 - misEnglish > uniqueEnglish
+
+Number of distinct words that Hawaiian checker reports as
+misspelled but English checker does not: 494 words
+Examples: about, current
+Commands used:
+$ cat misHawaiian | comm -23 - misEnglish > uniqueHawaiian

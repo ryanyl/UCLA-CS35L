@@ -1,0 +1,282 @@
+Ryan Lin
+005131227
+Lab 6
+==========
+
+1. I created and compiled simpgmp.c from the code given in the assignment page
+$ gcc -lgmp -o simpgmp simpgmp.c
+
+2. To test the functionality of simpgmp, I ran
+$ ./simpgmp 24 gave 16777216
+$ ./simpgmp 16777216 > output
+I examined the output file and checked that the first 4 digits were 1818 and
+that the last 4 digits were 7536. To count the number of digits outputted,
+I wrote a simple c script
+
+  #include <stdio.h>
+
+  int main(void){
+    int c = getchar();
+    int count;
+    while( !feof(stdin)){
+      count++;
+      c = getchar();
+    }
+    fprintf(stdout, "%d\n", count);
+  }
+
+I then executed the following commands which outputted 5050446, which was expected.
+
+$ ./simpgmp 16777216 > temp
+$ ./countdigits < temp
+
+3. Running ldd on simpgmp gave the following output:
+	linux-vdso.so.1 =>  (0x00007fffd8f71000)
+	libgmp.so.10 => /lib64/libgmp.so.10 (0x00007fe38c439000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fe38c06b000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fe38c6b1000)
+
+The first line is the VDSO, a shared library embedded in the kernel which
+is executed whenever a new process is started. The second and third lines
+are the libraries that are dynamically linked. The last line is an ELF
+interpreter, which is responsible for dynamically linking libraries.
+
+4. Running $ strace ./simpgmp gives the syscalls being used by simpgmp. It is easy to see
+when a dynamic library is involved, since dynamic libraries generally end in '.so'
+Shown below is the output from calling strace ./simpgmp which
+demonstrates how syscalls are used on dynamic libraries. 'access' checks
+if the program has access to the dynamic library. 'open' opens the library.
+'read' and 'fstat' returns information about the contents of the library.
+'mmap' and 'mprotect' deals with mapping and protecting memory space
+created and referenced for the dynamic library. Finally, 'close' is used
+to close the dynamic library.
+
+execve("./simpgmp", ["./simpgmp"], [/* 33 vars */]) = 0
+brk(NULL)                               = 0x16ad000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f05a75ac000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=158981, ...}) = 0
+mmap(NULL, 158981, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f05a7585000
+close(3)                                = 0
+open("/lib64/libgmp.so.10", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\200\304\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=495720, ...}) = 0
+mmap(NULL, 2584736, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f05a7114000
+mprotect(0x7f05a718a000, 2093056, PROT_NONE) = 0
+mmap(0x7f05a7389000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x75000) = 0x7f05a7389000
+close(3)                                = 0
+open("/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P&\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2156072, ...}) = 0
+mmap(NULL, 3985888, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f05a6d46000
+mprotect(0x7f05a6f09000, 2097152, PROT_NONE) = 0
+mmap(0x7f05a7109000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1c3000) = 0x7f05a7109000
+mmap(0x7f05a710f000, 16864, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f05a710f000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f05a7584000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f05a7582000
+arch_prctl(ARCH_SET_FS, 0x7f05a7582740) = 0
+mprotect(0x7f05a7109000, 16384, PROT_READ) = 0
+mprotect(0x7f05a7389000, 8192, PROT_READ) = 0
+mprotect(0x600000, 4096, PROT_READ)     = 0
+mprotect(0x7f05a75ad000, 4096, PROT_READ) = 0
+munmap(0x7f05a7585000, 158981)          = 0
+write(2, "./simpgmp: usage: ./simpgmp expo"..., 37./simpgmp: usage: ./simpgmp exponent
+) = 37
+exit_group(1)                           = ?
+  
+
+5. Running $ ls /usr/bin | awk '(NR-005131227)%251 == 0' gave the following:
+  aconnect
+  createfontdatachunk.pyc
+  fmtutil-sys
+  hoststat
+  kpsereadlink
+  msgattrib
+  pcp2graphite
+  recode-sr-latin
+  sync
+  xdg-screensaver
+
+6. I then ran ldd on each of these commands. The outputs are shown below.
+When I called ldd on some of these commands, an error occurred saying that
+the given command is not a dynamic executable. I emacs'd into
+each of the commands returning this error and discovered that these
+were scripts and not compiled programs, thus producing this error.
+Another error I encountered read: "you do not have execution permission" 
+which means it does not have execute permissions enabled.
+
+$ ldd aconnect
+
+  linux-vdso.so.1 =>  (0x00007ffd25ff1000)
+  libasound.so.2 => /lib64/libasound.so.2 (0x00007f8af7e9e000)
+  libm.so.6 => /lib64/libm.so.6 (0x00007f8af7b9c000)
+  libdl.so.2 => /lib64/libdl.so.2 (0x00007f8af7998000)
+  libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f8af777c000)
+  libc.so.6 => /lib64/libc.so.6 (0x00007f8af73ae000)
+  librt.so.1 => /lib64/librt.so.1 (0x00007f8af71a6000)
+  /lib64/ld-linux-x86-64.so.2 (0x00007f8af819e000)
+
+$ ldd createfontdatachunk.pyc
+
+ldd: warning: you do not have execution permission for 
+`./createfontdatachunk.pyc'not a dynamic executable
+
+$ ldd fmtutil-sys
+not a dynamic executable
+
+$ ldd hoststat
+  linux-vdso.so.1 =>  (0x00007ffc3e7ce000)
+  libssl.so.10 => /lib64/libssl.so.10 (0x00007f5a617c7000)
+  libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007f5a61364000)
+  libnsl.so.1 => /lib64/libnsl.so.1 (0x00007f5a6114a000)
+  libwrap.so.0 => /lib64/libwrap.so.0 (0x00007f5a60f3f000)
+  libhesiod.so.0 => /lib64/libhesiod.so.0 (0x00007f5a60d3a000)
+  libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00007f5a60b03000)
+  libdb-5.3.so => /lib64/libdb-5.3.so (0x00007f5a60745000)
+  libresolv.so.2 => /lib64/libresolv.so.2 (0x00007f5a6052c000)
+  libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00007f5a6030f000)
+  libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00007f5a600ba000)
+  liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00007f5a5feab000)
+  libc.so.6 => /lib64/libc.so.6 (0x00007f5a5fadd000)
+  libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00007f5a5f890000)
+  libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00007f5a5f5a7000)
+  libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00007f5a5f3a3000)
+  libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00007f5a5f170000)
+  libdl.so.2 => /lib64/libdl.so.2 (0x00007f5a5ef6c000)
+  libz.so.1 => /lib64/libz.so.1 (0x00007f5a5ed56000)
+  libidn.so.11 => /lib64/libidn.so.11 (0x00007f5a5eb23000)
+  libfreebl3.so => /lib64/libfreebl3.so (0x00007f5a5e920000)
+  libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f5a5e704000)
+  libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00007f5a5e4f4000)
+  libssl3.so => /lib64/libssl3.so (0x00007f5a5e29b000)
+  libsmime3.so => /lib64/libsmime3.so (0x00007f5a5e073000)
+  libnss3.so => /lib64/libnss3.so (0x00007f5a5dd44000)
+  libnssutil3.so => /lib64/libnssutil3.so (0x00007f5a5db14000)
+  libplds4.so => /lib64/libplds4.so (0x00007f5a5d910000)
+  libplc4.so => /lib64/libplc4.so (0x00007f5a5d70b000)
+  libnspr4.so => /lib64/libnspr4.so (0x00007f5a5d4cd000)
+  /lib64/ld-linux-x86-64.so.2 (0x00007f5a61da4000)
+  libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00007f5a5d2c9000)
+  libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f5a5d0a2000)
+  librt.so.1 => /lib64/librt.so.1 (0x00007f5a5ce9a000)
+  libpcre.so.1 => /lib64/libpcre.so.1 (0x00007f5a5cc38000)
+
+$ ldd kpsereadlink
+  linux-vdso.so.1 =>  (0x00007fffc0df0000)
+  libc.so.6 => /lib64/libc.so.6 (0x00007ff0553fb000)
+  /lib64/ld-linux-x86-64.so.2 (0x00007ff0557c9000)
+
+$ ldd msgattrib
+  libm.so.6 => /lib64/libm.so.6 (0x00007f0c69e77000)
+  libcroco-0.6.so.3 => /lib64/libcroco-0.6.so.3 (0x00007f0c69c3c000)
+  libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f0c69926000)
+  libxml2.so.2 => /lib64/libxml2.so.2 (0x00007f0c695bc000)
+  libncurses.so.5 => /lib64/libncurses.so.5 (0x00007f0c69395000)
+  libtinfo.so.5 => /lib64/libtinfo.so.5 (0x00007f0c6916b000)
+  libunistring.so.0 => /lib64/libunistring.so.0 (0x00007f0c68e54000)
+  libc.so.6 => /lib64/libc.so.6 (0x00007f0c68a86000)
+  libgomp.so.1 => /lib64/libgomp.so.1 (0x00007f0c68860000)
+  libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f0c68644000)
+  /lib64/ld-linux-x86-64.so.2 (0x00007f0c6a696000)
+  libpcre.so.1 => /lib64/libpcre.so.1 (0x00007f0c683e2000)
+  libdl.so.2 => /lib64/libdl.so.2 (0x00007f0c681de000)
+  libz.so.1 => /lib64/libz.so.1 (0x00007f0c67fc8000)
+  liblzma.so.5 => /lib64/liblzma.so.5 (0x00007f0c67da2000)
+
+$ ldd pcp2graphite
+  not a dynamic executable
+
+$ ldd recode-sr-latin
+  linux-vdso.so.1 =>  (0x00007ffe69325000)
+  libgettextlib-0.19.8.1.so => /lib64/libgettextlib-0.19.8.1.so (0x00007f449a006000)
+  libm.so.6 => /lib64/libm.so.6 (0x00007f4499d04000)
+  libcroco-0.6.so.3 => /lib64/libcroco-0.6.so.3 (0x00007f4499ac9000)
+  libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f44997b3000)
+  libxml2.so.2 => /lib64/libxml2.so.2 (0x00007f4499449000)
+  libncurses.so.5 => /lib64/libncurses.so.5 (0x00007f4499222000)
+  libtinfo.so.5 => /lib64/libtinfo.so.5 (0x00007f4498ff8000)
+  libunistring.so.0 => /lib64/libunistring.so.0 (0x00007f4498ce1000)
+  libgomp.so.1 => /lib64/libgomp.so.1 (0x00007f4498abb000)
+  libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f449889f000)
+  libc.so.6 => /lib64/libc.so.6 (0x00007f44984d1000)
+  /lib64/ld-linux-x86-64.so.2 (0x00007f449a2d6000)
+  libpcre.so.1 => /lib64/libpcre.so.1 (0x00007f449826f000)
+  libdl.so.2 => /lib64/libdl.so.2 (0x00007f449806b000)
+  libz.so.1 => /lib64/libz.so.1 (0x00007f4497e55000)
+  liblzma.so.5 => /lib64/liblzma.so.5 (0x00007f4497c2f000)
+
+$ ldd sync
+  linux-vdso.so.1 =>  (0x00007fff6dbb0000)
+  libc.so.6 => /lib64/libc.so.6 (0x00007f7378c2b000)
+  /lib64/ld-linux-x86-64.so.2 (0x00007f7378ff9000)
+
+$ ldd xdg-screensaver
+  not a dynamic executable
+
+7. I first created a simple script 'commands.sh; that outputted the result of calling 
+ldd on every command returned from then piped the result to a series of 
+commands that eventually extracted a sorted list of all the libraries
+
+commands.sh:
+
+  #!/usr/bin/env bash                                                                                                  
+
+  cd /usr/bin
+
+  for com in `ls /usr/bin | awk '(NR-005131227)%251 == 0'`; do
+          ldd $com
+  done
+
+./commands.sh | grep .so | sed -E 's/ =>.*//g' | sed -E 's/\(([0-9a-zA-Z]*)\)//g' | sort -u > sorted-library-list
+
+I then emacs'd into the newly created file and examined the contents:
+
+  /lib64/ld-linux-x86-64.so.2 
+  libasound.so.2
+  libcom_err.so.2
+  libcroco-0.6.so.3
+  libcrypto.so.10
+  libcrypt.so.1
+  libc.so.6
+  libdb-5.3.so
+  libdl.so.2
+  libfreebl3.so
+  libgettextlib-0.19.8.1.so
+  libgettextsrc-0.19.8.1.so
+  libglib-2.0.so.0
+  libgomp.so.1
+  libgssapi_krb5.so.2
+  libhesiod.so.0
+  libidn.so.11
+  libk5crypto.so.3
+  libkeyutils.so.1
+  libkrb5.so.3
+  libkrb5support.so.0
+  liblber-2.4.so.2
+  libldap-2.4.so.2
+  liblzma.so.5
+  libm.so.6
+  libncurses.so.5
+  libnsl.so.1
+  libnspr4.so
+  libnss3.so
+  libnssutil3.so
+  libpcre.so.1
+  libplc4.so
+  libplds4.so
+  libpthread.so.0
+  libresolv.so.2
+  librt.so.1
+  libsasl2.so.3
+  libselinux.so.1
+  libsmime3.so
+  libssl3.so
+  libssl.so.10
+  libtinfo.so.5
+  libunistring.so.0
+  libwrap.so.0
+  libxml2.so.2
+  libz.so.1
+  linux-vdso.so.1

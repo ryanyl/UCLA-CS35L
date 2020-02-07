@@ -1,0 +1,89 @@
+Ryan Lin
+005131227
+Lab 3
+==========
+
+1) Obtain coreutils-8.29 tar file
+$ wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz
+
+obtain signature
+$ wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz.sig
+
+get GNU keyring
+$ wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
+
+verify signature
+$ gpg --verify --keyring ./gnu-keyring.gpg coreutils-8.29.tar.xz.sig
+
+The verification indicates that it is a good signature from Pádraig Brady.
+There is warning saying: "This key is not certified with a trusted signature!
+There is no indication that the signature belongs to the owner". This just 
+means Pádraig Brady's public key is yet to be verified by you.
+
+2) unzip and untar coreutils-8.29
+$ tar -xJvf coreutils-8.29.tar.xz
+
+made directory where coreutils-8.29 would be installed
+$ mkdir ~/coreutilsInstall
+
+configure file with prefix tag
+$ ./configure --prefix=/u/ee/ugrad/linr/coreutilsInstall
+
+make and install
+$ make
+$ make install
+
+3) Reproducing the bug:
+$ cd ~/coreutilsInstall
+$ mkdir foo
+$ ./ls -a -A foo
+
+./ls -a -A should have outputted nothing, since -A was the last option 
+specified. However, ".." and "." were outputted, meaning that -a was
+applied instead of -A.
+
+4) Apply patch
+I created the patch file $ emacs patch_file then copy and pasted
+corresponding patches from the given patch file. I then applied
+the patch with
+$ patch -p1 < patch_file
+Problems:
+patch command outputted the following
+
+  Hunk #1 FAILED at 4.
+  1 out of 1 hunk FAILED -- saving rejects to file NEWS.rej
+  patching file src/ls.c
+  Hunk #1 succeeded at 1900 (offset -3 lines).
+
+The Hunk failed indicates that the patches made to NEWS were 
+unsuccessful. Offset -3 lines indicates that patches were made starting
+on lines 1900 instead of 1903 (where 1903 was indicated in patch_file). 
+Although there were these discrepancies, I emacs'd into the modified 
+file and confirmed that the patch was applied successfully.
+
+5) Commands executed by make
+
+CC means C compiled, so the command compiled src/ls.o
+  CC       src/ls.o
+
+CCLD means compile and link, so src/dir src/ls src/vdir
+  CCLD     src/dir
+  CCLD     src/ls
+  CCLD     src/vdir
+
+GEN generates manual pages for the following files: dir.1, ls.1, vdir.1
+  GEN      man/dir.1
+  GEN      man/ls.1
+  GEN      man/vdir.1
+
+
+6) Testing patched file
+$ cd ~/coreutils-8.29/src
+$ mkdir foo
+$ ./ls -a -A foo
+Outputs nothing, which indicates -A overrides -a. Patch successful.
+
+
+
+
+

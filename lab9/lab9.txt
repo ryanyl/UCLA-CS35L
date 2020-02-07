@@ -1,0 +1,132 @@
+Ryan Lin
+005131227
+Lab 9
+==========
+
+1. To find out how much disk space is used to represent the working files
+in this directory, I cd'd into the directory and ran du
+
+$ cd ~eggert/src/gnu/emacs-CS-35L
+$ du -sh --exclude .git
+
+which gave 159M
+
+To find how much disk space is used to represent the .git directory,
+I ran
+
+$ du -sh .git
+
+which gave 350M
+
+To find the largest files in the directory, I ran the following command which
+lists the top ten files by disk space.
+
+$ du -a . | sort -nr | head -n10
+
+520828	.
+358316	./.git
+349928	./.git/objects
+342032	./.git/objects/pack
+318152	./.git/objects/pack/pack-24e56b1749b9320c560213d9045fa6cee42b4174.pack
+72680	./lisp
+23876	./.git/objects/pack/pack-24e56b1749b9320c560213d9045fa6cee42b4174.idx
+20372	./src
+16700	./doc
+14656	./test
+
+The largest non-directory file is
+./.git/objects/pack/pack-24e56b1749b9320c560213d9045fa6cee42b4174.pack
+which has the size of 318152. It makes sense that this is the largest
+file because git pack objects are essentially compressed data from merging
+multiple files together. Not surprisingly, these files end up being
+large.
+
+2. To find how many branches are remote to the repository, I ran
+$ git branch -r | wc -l
+and found that there were 177 remote branches
+
+To find how many branches were local, I ran
+$ git branch -l | wc -l
+and found that there were 176 local branches
+
+3. There is one remote repository named origin. The url corresponding
+to it is https://git.savannah.gnu.org/git/emacs.git I used git remote
+to get the name of the remote and the -v option to see the url corresponding
+to that remote repository.
+
+$ git remote
+$ git remote -v
+
+4. The ten branches most recently committed to are the following
+
+$ git for-each-ref --sort=-committerdate --count=10
+
+	19aecd340b7b3ab54629b790ba70a90130bad63d commit	refs/remotes/origin/master
+	19aecd340b7b3ab54629b790ba70a90130bad63d commit	refs/remotes/origin/HEAD
+	19aecd340b7b3ab54629b790ba70a90130bad63d commit	refs/heads/master
+	d2873706749ef68803e79bab6109a534f4c9d23a commit	refs/remotes/origin/scratch/joaot/make-completion-at-point-function
+	d2873706749ef68803e79bab6109a534f4c9d23a commit	refs/heads/scratch/joaot/make-completion-at-point-function
+	dd3fa9411a28175f9a1a984a69cfa7162023c5df commit	refs/remotes/origin/feature/windows-with-utils
+	dd3fa9411a28175f9a1a984a69cfa7162023c5df commit	refs/heads/feature/windows-with-utils
+	8f22251e595d7598d6643b0d24bf5f409dc59fa8 commit	refs/remotes/origin/scratch/completion-api
+	8f22251e595d7598d6643b0d24bf5f409dc59fa8 commit	refs/heads/scratch/completion-api
+	8a4de19dfb52551a65c360a9346ede137d0fc6e8 commit	refs/remotes/origin/scratch/a-modest-completion-redesign-proposal
+
+5. The number of commits to master is 139583
+$ git rev-list --count master
+
+6. To find the percentage of all commits that are also in master branch, I
+first found the total number of commits across all branches then found the
+ratio of the number of commits specific to master to the number of total
+commits.
+
+$ git rev-list --all --count
+
+gave the number of total commits, which was 143910. From the last question,
+the number of commits in master is 139583
+
+139583/143910 = 0.96993259676 ~ 97%
+
+7. To find the ten people who authored the most commits 2013 or later, I ran
+$ git shortlog -sn --since="01 Jan 2013"
+and took the first 10 lines of the output, which lists the number of commits
+made followed by the author
+
+  3691  Eli Zaretskii
+  3644  Glenn Morris
+  3604  Paul Eggert
+  1806  Lars Ingebrigtsen
+  1784  Stefan Monnier
+  1571  Michael Albinus
+   619  Dmitry Gutov
+   576  Noam Postavsky
+   471  Alan Mackenzie
+   469  Juri Linkov
+
+
+8. I logged out of the SEASnet servers and SSH'd back in with -X after
+running Xquartz locally.
+
+After searching each commit hash on gitk and examining its relative position
+to the other specified commits, I was able to generate the following diagram:
+
+                          c5
+c1                       /
+  \                   ... c6
+   c2 - c3 ... c4 .../        \
+                               c7         c9 ... c10
+                                 \       /       /
+                                   ... c8 ......  
+
+I labelled each commit as follows:
+
+4ea37c2b8b0c5a68fde59770c3536195e0972217 : c1
+977cd6cb28a37744966ec62f70cf62659f6f302a : c2
+625cee531623feddbe3174fad52c7db96ec60bb3 : c3
+5490ccc5ebf39759dfd084bbd31f464701a3e775 : c4
+0c06b93c1e467debd401eb0b3be4652fde14fa95 : c5
+820739bbb572b30b6ce45756c9960e48dca859af : c6
+00e4e3e9d273a193620c3a4bb4914e555cb8e343 : c7
+49cd561dc62ea6b3fbedab7aef0f020733f4cf09 : c8
+abcb2e62dae6aa26308f7ac9efc89247f89cbe65 : c9
+98ac36efe4ce4bd3a0bca76fc73ce6c7abaa4371 : c10

@@ -1,0 +1,129 @@
+Ryan Lin
+005131227
+Lab 1
+==========
+
+1.
+$ man -k [expression]
+commands used:
+$ man man
+
+2.
+sh is located in /usr/bin/bash
+mv is located in /usr/bin/mv
+commands used:
+$ man whereis
+$ whereis sh
+$ whereis mv
+$ readlink /usr/bin/sh
+$ readlink /usr/bin/mv
+
+3.
+ar - create, modify, and extract from archives
+pr - convert text files for printing
+tr - translate or delete characters
+commands used:
+$ man -k ^.r$
+
+4. 
+resolved symbolic link: /usr/bin/emacs-24.3
+used readlink twice to resolve chain of symbolic links 
+commands used:
+$ man readlink
+$ readlink /usr/bin/emacs
+$ readlink /etc/alternatives/emacs
+
+5.
+gcc version 4.8.5 20150623 (Red Hat 4.8.5-39) (GCC)
+gcc version 9.2.0 (GCC) 
+They are different because different versions of GCC can exist in different paths on the
+same machine. The GCC stored in /usr/bin is outdated while the plain GCC program is.
+commands used:
+$ gcc -v
+$ /usr/bin/gcc -v
+
+6.
+u+sx sets the execute and setuid modes for the user.
+o-w unsets the write mode for others (users who are neither the owner nor members of the file's group).
+commands used:
+$ man chmod
+
+7.
+Output (first five):
+.
+./src/bison
+./src/bison/RCS
+./src/gnuplot
+./src/gnuplot/RCS
+commands used:
+$ cd /usr/local/cs
+$ man find
+$ find . -type d -mtime -28
+
+8.
+253 symbolic links (lnxsrv07) 
+commands used:
+$ whereis find
+$ cd /usr/bin
+$ find -type l > ~/temp.txt
+$ cd
+$ emacs temp.txt
+scrolled to bottom of temp.txt and inspected last line number
+
+9.
+librom1394.so.0.3.0
+commands used:
+$ cd /usr/lib64
+$ man ls
+$ ls -t -a -l
+
+10. locale gets its information from /usr/lib/locale/locale-archive, which is the usual default locale archive location
+commands used:
+$ man locale
+
+11.
+downcase-dwim
+downcase-region
+downcase-word
+commands used:
+$ emacs
+(emacs) C-h r
+(emacs) C-h a downcase
+
+12.
+C-M r Begin reverse incremental regexp search ('isearch-backward-regexp')
+C-M s Begin incremental regexp search ('isearch-forward-regexp')
+C-M t Switches the positions of the previous balanced expression and the next one ('transpose sexps')
+C-M u Move up in parenthesis structure ('backward-up-list')
+C-M v scrolls the window that 'C-x o' would select ('scroll-other-window')
+commands used:
+$ emacs
+(emacs) C-h K C-M r
+(emacs) C-h K C-M s
+(emacs) C-h K C-M t
+(emacs) C-h K C-M u
+(emacs) C-h K C-M v
+
+13.
+C-g signals a quit condition. C-g is the way to get rid of a partially typed command,
+or a numeric argument that you don't want. Furthermore, if you are in the middle of a 
+command, C-g stops the command in a relatively safe way.
+commands used:
+(emacs) C-h K C-r
+
+14.
+yanking means reinserting text previously killed; can be invoked with C-y
+commands used:
+(emacs) C-h w yank
+(emacs) C-h K C-y
+
+15.
+ls -l does not list files beginning with '.', while the emacs dired command does. The coloring of files are also different; the dired command shows files and directories in white while ls -l shows directories as white and files as green.
+commands used:
+$ cd /usr/bin
+$ ls -l
+(emacs) C-h dired
+(emacs) C-x d /usr/bin
+
+
+

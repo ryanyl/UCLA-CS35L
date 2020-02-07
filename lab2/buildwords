@@ -1,0 +1,28 @@
+#!/usr/bin/bash
+
+#converts all uppercase characters to lowercase
+tr [:upper:] [:lower:] |
+
+#replaces all instances of the Hawaiian okina with an apostrophe
+tr '`' "'" |
+
+#removes all instances of ?, <u>, and </u>
+sed 's/?\|<u>\|<\/u>//g' |
+
+#extracts all lines with a Hawaiian word
+egrep "^([ ]*<td[^>]*>)[pkmnwlhaeiou' ]*(</td>[ ]*)$" |
+
+#removes all HTML tags
+sed -E 's/<[^>]*>//g' |
+
+#removes leading whitespace
+sed -E 's/^ *//g' |
+
+#separates words into different lines
+sed -E 's/ /\n/g' |
+
+#sorts and deletes duplicates
+sort -u | 
+
+#delete empty lines
+grep '.'

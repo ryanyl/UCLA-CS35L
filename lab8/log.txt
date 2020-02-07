@@ -1,0 +1,160 @@
+Ryan Lin
+005131227
+Laboratory 8
+==========
+
+1. SETUP
+
+To set up my BeagleBone, I first started by connecting it to my laptop with
+a usb cable. After my computer detected it as an external storage device,
+I opened the folder and double-clicked the START.htm file, which brought me
+to a webpage that had further instructions on setting up the BeagleBone.
+
+I then downloaded the necessary drivers required to use the BeagleBone listed
+on the webpage for Mac OS. Because my Mac OS was updated to higher than
+10.11, I had to install an additional driver called HoRNDIS. I then removed
+HoRNDIS.kext with
+
+$ sudo rm -rf /System/Library/Extensions/HoRNDIS.kext
+
+After my drivers had been installed, I restarted my computer and was able
+to successfully ssh into my BeagleBone with root as my username using the 
+local ip address. There was no password set for root by default.
+
+$ sudo ssh root@192.168.7.2
+Passord: <ENTER>
+
+I then connected my BeagleBone to UCLA-WIFI by using connmanctl and then
+downloaded the Firefox and the packages required for X11 fowarding support 
+for future connections to my BeagleBone.
+
+$ connmanclt
+# enable wifi
+# scan wifi
+# services
+# agent on
+# connect
+# quit
+$ sudo apt-get install xauth
+$ sudo apt-get install xvfb
+$ sudo apt-get install firefox-esr-l10n-en-gb 
+
+I made sure that X11 was not disabled in the files
+/etc/ssh/ssh_config and /etc/ssh/sshd_config and that it was enabled in
+~/.ssh/config by changing 'X11 forwarding no' to 'X11 fowarding yes'.
+
+2. AS HOST
+
+I generated a public and private key for my BeagleBone by running
+$ ssh-keygen
+which then asked me to enter the filename in which the keys would be stored,
+for which I put /root/.ssh/id_rsa. I then chose a password and entered it 
+again to confirm it. Below is the corresponding key fingerprint and randomart
+
+a4:0d:2f:d3:61:67:16:ba:fb:c8:56:5b:92:29:74:80 root@beaglebone
+
++---[RSA 2048]----+
+|       .  .      |
+|      E .. .     |
+|      . =.+      |
+|       O.*.      |
+|      +.S. o     |
+|       o..= .    |
+|        .o +     |
+|       ..o.      |
+|       .o .      |
++-----------------+
+
+I set up a user account for my partner on my BeagleBone using useradd and
+created a home directory for him. I then set a UNIX password for his account
+using the passwd command.
+
+$ sudo useradd -d /home/jake -m jake
+$ sudo passwd jake
+
+Next, I created a .ssh folder in his home directory and changed the ownership
+of it with chown and enabled all owner rights and disabled all non-owner rights
+with chmod.
+
+$ cd /home/jake
+$ sudo mkdir .ssh
+$ sudo chown -R jake .ssh
+$ sudo chmod 700 .ssh
+
+I then ran ifconfig to get my IP address for my partner to use to ssh
+into my BeagleBone. The IP address was listed under wlan0 section
+inet addr: 172.20.10.4
+
+wlan0	  Link encap:Ethernet  HWaddr 2c:f7:f1:06:78:82  
+          inet addr:172.20.10.4  Bcast:172.20.10.15  Mask:255.255.255.240
+          inet6 addr: fe80::2ef7:f1ff:fe06:7882/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST DYNAMIC  MTU:1500  Metric:1
+          RX packets:86 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:974 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:8924 (8.7 KiB)  TX bytes:136679 (133.4 KiB)
+
+
+Because we were not in the lab room, we could not access CR3760-wifi. Instead,
+my partner opened up a hotspot on his phone and we connected our BeagleBones to
+that network. My partner then sent his generated public key to my
+BeagleBone using ssh-copy-id and then logged into the account I set up for
+him, where he performed all the client testing steps shown below.
+
+3. AS CLIENT
+
+After my partner performed all the necessary steps as a host, I performed
+the following steps:
+
+Because we were not in the lab room, we could not access CR3760-wifi. Instead,
+my partner opened up a hotspot on his phone and we used that instead.
+
+I sent my public key to my partner's BeagleBone by running the following:
+
+$ ssh-copy-id -i ~/.ssh/id_rsa.pub ryan@192.168.43.36
+
+I was then prompted with the message:
+
+The authenticity of host '192.168.43.36 (192.168.43.36)' can't be established.
+ECDSA key fingerprint is 95:08:0b:5c:04:50:47:96:32:94:6b:e3:77:0c:88:ec.
+Are you sure you want to continue connecting (yes/no)?
+
+For which I responded yes. I was then prompted for a password for 
+ryan@192.168.43.36, for which I entered the password my partner set for me
+with the passwd command.
+
+I then started ssh-agent and added my private key to it with the following
+commands. Doing so allows me to log into other servers without having to type
+a password or passphrase again.
+
+$ eval `ssh-agent`
+$ ssh-add
+
+I then ssh'd into my partner's BeagleBone with
+
+$ ssh ryan@192.168.43.36
+
+The ssh seemed successful and I tested it by making several files in my home
+directory. My partner then cd'd into /home/ryan and confirmed that the files
+I created were indeed on his server.
+
+Next, I tested X11 forwarding with Xquartz. First I logged out of his
+server as well as my own local BeagleBone. I then re-ssh'd into my
+BeagleBone and then my partner's, but with X11 forwarding enabled.
+
+$ ssh -X root@192.168.7.2
+$ ssh -X ryan@192.168.43.36
+
+I then ran the following to test that Xforwarding and my partner's installed
+apps were functioning correct.
+
+$ firefox
+
+Shortly after, a window popped up and I was able to surf the web (albeit rather
+slowly). I also tried running xeyes, which my partner had installed on his
+BeagleBone by running
+
+$ apt-get install x11-apps
+
+This was also successful and a window with eyes popped up and reacted to my
+mouse movements.

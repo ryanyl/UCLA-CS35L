@@ -1,0 +1,77 @@
+#!/usr/bin/bash
+
+#set glob to read hidden files
+shopt -s dotglob
+
+checkDir()
+{
+if ls -1qA | grep -q .; then
+    :
+else
+    return
+fi
+
+
+for file in *; do
+    if echo $file | grep -Eq '^\-|^\.|[^A-Za-z_\.\-]|^.{15,}$'; then
+	if [ -d "$file" ]; then
+	    echo `pwd`/$file/
+	else
+	    echo `pwd`/$file
+	fi
+	
+    fi
+    REPEATS=`find . -maxdepth 1 -iname "$file" | wc -l`
+    if test $REPEATS -gt 1; then
+	if [ -d "$file" ]; then
+	    echo `pwd`/$file/
+	else
+	    echo `pwd`/$file
+	fi
+    fi
+done
+}
+
+recursiveCheck()
+{
+    checkDir
+    for file in *; do
+	if [ -d "$file" ]; then   
+	    #   recursiveCheck $file
+	    if [ ! -r "$file" ]; then
+		  >&2 echo "no read permissions on $file"
+        else
+            cd `pwd`/$file
+	        recursiveCheck
+            cd ..
+	    fi
+       fi
+    done
+}
+
+if [ "$#" -gt 1 ]; then
+    >&2 echo "too many arguments"
+    exit 1
+fi
+
+DIR=$1
+
+#ensure input DIR is valid
+if echo | grep -Eq '^\-'; then
+    >&2 echo "input directory cannot start with dash"
+    exit 1
+elif [ -z "$DIR" ]
+then
+    DIR="."
+elif [ ! -d "$DIR" ]
+then
+    >&2 echo "$DIR is not a directory"
+    exit 1
+elif [ ! -r "$DIR" ]
+then
+    >&2 echo "read permissions not enabled on $DIR"
+    exit 0
+fi
+
+cd $DIR
+recursiveCheck

@@ -1,0 +1,183 @@
+Ryan Lin
+005131227
+Assignment 7
+==========
+
+1. I first obtained a copy of the Diffutils repository by running
+$ cp ~eggert/src/gnu/diffutils .
+
+2. To get a log of changes I ran
+$ git log > git-log.txt
+
+3. To get a list of tags used for diff I ran
+$ git tag > git-tags.txt
+
+4. I use emacs find C-s to find the commit id corresponding to the title
+“maint: quote 'like this' or "like this", not `like this'”, then ran
+$ git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > quote-patch.txt
+to obtain the diff file associated with that particular commit id and 
+saved the output into quote-patch.txt
+
+5. To checkout version 3 of diffutils I ran
+$ git checkout v3.0
+
+6. To apply quote-patch.txt I ran
+$ patch -p1 <quote-patch.txt
+
+When the patch could not find a target file, I hit enter and skipped it.
+Most hunks succeeded with a few rejects. The rejected hunks were outputted
+to diff3.c.rej
+
+7. running git status lists all modified and untracked files. The following
+files were modified:
+
+	modified:   NEWS
+	modified:   README
+	modified:   TODO
+	modified:   doc/diagmeet.note
+	modified:   ms/config.bat
+	modified:   ms/config.site
+	modified:   po/en.po
+	modified:   src/analyze.c
+	modified:   src/cmp.c
+	modified:   src/context.c
+	modified:   src/diff.c
+	modified:   src/diff.h
+	modified:   src/diff3.c
+	modified:   src/dir.c
+	modified:   src/ifdef.c
+	modified:   src/io.c
+	modified:   u src/sdiff.c
+	modified:   src/side.c
+	modified:   src/system.h
+	modified:   src/util.c
+	modified:   tests/help-version
+
+The temporary original copy that diff saves as well as the files containing
+the rejected hunks are shown as untracked files since they were just created
+and have not been git added.
+
+	NEWS.orig
+	README-hacking.orig
+	README-hacking.rej
+	README.orig
+	README.rej
+	cfg.mk.orig
+	cfg.mk.rej
+	git-log.txt
+	git-tags.txt
+	ms/config.site.orig
+	quote-patch.txt
+	src/cmp.c.orig
+	src/context.c.orig
+	src/diff.c.orig
+	src/diff.c.rej
+	src/diff.h.orig
+	src/diff3.c.orig
+	src/diff3.c.rej
+	src/dir.c.orig
+	src/sdiff.c.orig
+	src/system.h.orig
+	src/util.c.orig
+	tests/help-version.orig
+
+8. vc-diff (C-x v =) compares the workfiles with the original version
+vc-revert (C-x v u) reverts the current version control file set to its last
+revision. I opened a file modified by the patch and ran vc-diff then ran
+C-h m (describe mode) which listed the commands I could use in the vc-diff
+buffer. 
+
+According to gnu.org,
+diff-apply-hunk C-c C-a applies the hunk to its target files
+diff-goto-source C-c C-c Goes to the source file and the lines 
+corresponding to the hunk
+
+9. I reverted all changes from non .c files by emacs'ing into each file
+and doing C-x v u. To undo all non character-string changes in the .c
+files, I examined each file in emacs using C-x v = and for each non
+character-string change I saw in the diff buffer I reverted the change
+manually in the corresponding .c file.
+
+10. I examined diff.c.rej and diff3.c.rej and manually patched diff.c
+and diff3.c by copying and pasting the corresponding changes according
+to each of their .rej files.
+
+11. To remove all untracked files I ran
+$ git clean -n to first confirm the files I would be removing then ran
+$ git clean -f to remove those files
+
+12. git status now outputs:
+
+	$ git status
+	modified:   src/cmp.c
+	modified:   src/diff.c
+	modified:   src/diff3.c
+	modified:   src/dir.c
+	modified:   src/sdiff.c
+	modified:   src/util.c
+
+I then ran the following command, which outputted a patch file 300-400 lines
+long into quote-3.0-patch.txt
+
+$ git diff > quote-3.0-patch.txt
+
+13. To build the modified version of diffutils, I followed README-hacking
+and excecuted the following commands. I had to apply a separate patch 
+because I was using lnxsrv07
+
+$ ./bootstrap
+$ emacs patchfile
+*copied given patchfile into directory*
+$ cd lib
+$ patch < patchfile
+$ cd ..
+$ ./configure
+$ make
+$ make check
+
+make check threw the following errors
+
+make[3]: *** [Makefile:1309: basic.log] Error 126
+make[3]: Leaving directory '/w/home.24/ee/ugrad/linr/cs35l/wk7/diffutils/tests'
+make[2]: *** [Makefile:1291: check-TESTS] Error 2
+make[2]: Leaving directory '/w/home.24/ee/ugrad/linr/cs35l/wk7/diffutils/tests'
+make[1]: *** [Makefile:1406: check-am] Error 2
+make[1]: Leaving directory '/w/home.24/ee/ugrad/linr/cs35l/wk7/diffutils/tests'
+make: *** [Makefile:1016: check-recursive] Error 1
+
+However, I ran "diff . -" and "diff --help" and both commands outputted what
+was expected, telling me that those errors were not detrimental to the
+performance of the modified diff.
+
+Tests:
+$ ./diff . -
+./diff: cannot compare '-' to a directory
+
+Running diff --help outputs many lines so I only included the lines of
+interest, namely those that had ` replaced with '
+
+$ ./ diff --help
+
+-D NAME  --ifdef=NAME  Output merged file to show '#ifdef NAME' diffs.
+LTYPE is 'old', 'new', or 'unchanged'.  GTYPE is LTYPE or 'changed'.
+FILES are 'FILE1 FILE2' or 'DIR1 DIR2' or 'DIR FILE...' or 'FILE... DIR'.
+If a FILE is '-', read standard input.
+
+14. I did a sanity test by using the new diff to compare the source code
+of Diffutils 3.0 to the source code of my modified version. To summarize
+what I did, I first created two directories to store the source files
+of the modified and original version. I then called the modified diff
+
+
+$ cd ..
+$ mkdir diffutils-3.0
+$ mkdir diffutils-3.0-patch
+$ cp diffutils/src/*.c diffutils-3.0-patch
+$ cp ~eggert/src/gnu/diffutils/src/*.c diffutils-3.0
+$ diffutils/src/diff -pru diffutils-3.0 diffutils-3.0-patch >quote-3.0-test.txt
+
+15. quote-3.0-test.txt is much longer than quote-3.0-patch at 4626 lines. The 
+files are clearly not identical. I emacs'd into quote-3.0-test and found
+found that the changes made also consisted of replacing ` with ', showing
+that while the files were different, the patch was successfully made.
+

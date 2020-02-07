@@ -1,0 +1,42 @@
+Ryan Lin
+005131227
+Homework 8
+==========
+
+1. If other teams had been observing all the bytes going across the network in
+my lab exercise, the network would still be secure. ssh encrypts all data sent
+over the network and only the a host or client can decrypt them. More
+specifically, data sent by a client to the host is encrypted by the host's
+public key and can only be decryped by the host's private key, which is
+never sent through the network. Similarly, data sent by the host to
+the client is encrypted by the client's public key and can only be
+decrypted with the client's private key, which is also never sent over
+the network.
+
+(1) If I assummed the other teams also tapped my keyboards after all client-
+server setup was completed, there may be a chance they might have stolen
+the keystrokes corresponding to our passwords. While the network may
+still be secure, meaning that if any third-party machine intercepted
+transmitted bytes, they would not be able to derive the original data,
+they could have stolen the password/passphrase to log in as my username
+if they tapped my keyboards while we entered our passwords, such as when
+we were setting up the password-free authentication with ssh-agent.
+
+(2) If I was booting off USB and another team had temporary access to that
+same USB, the network would no longer be secure. The attacking team would
+have access to my private key and could decrypt any message sent from the
+client to the host.
+
+2. gpg2 --verify ensures that the file in question has not been modified
+since the creation of the file's signature. However, it does not ensure
+that the file came from the intended sender. It is possible for someone
+to intercept and change data then create a new signature using the same
+public key without the reciever knowing it, since gpg2 --verfy would still
+run successfully with the modified data and new signature corresponding to
+that data.
+
+One way to overcome this problem is to have a trusted third-party managing the
+transmission keep a record of the original file and its original author.
+This can be done using CA, or certification authority, which is a digital
+certificate that certifies the ownership of a public key by the named
+subject of the certificate.
